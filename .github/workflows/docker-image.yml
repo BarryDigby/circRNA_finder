@@ -7,12 +7,21 @@ on:
     branches: [ "main" ]
 
 jobs:
-
-  build:
-
+  push_dockerhub:
+    name: Push new Docker image to Docker Hub
     runs-on: ubuntu-latest
-
+    if: ${{ github.repository == 'BarryDigby/circRNA_finder' }}
+    env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_PASS: ${{ secrets.DOCKERHUB_PASS }}
     steps:
-    - uses: actions/checkout@v3
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag barryd237/circrna_finder:latest
+      - name: Check out pipeline code
+        uses: actions/checkout@v2
+
+      - name: Build new docker image
+        run: docker build --no-cache . -t barryd237/circrna_finder:latest
+
+      - name: Push Docker image to DockerHub (dev)
+        run: |
+          echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+          docker push barryd237/circrna_finder:latest
